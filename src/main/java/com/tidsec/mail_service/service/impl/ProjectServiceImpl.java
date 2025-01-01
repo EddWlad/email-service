@@ -1,6 +1,7 @@
 package com.tidsec.mail_service.service.impl;
 
 import com.tidsec.mail_service.entities.Project;
+import com.tidsec.mail_service.exception.ModelNotFoundException;
 import com.tidsec.mail_service.repositories.IProjectRepository;
 import com.tidsec.mail_service.service.IProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public Project updateProject(Long id, Project project) {
-        Project projectDb = projectRepository.findById(id).orElse(null);
+        Project projectDb = projectRepository.findById(id).orElseThrow(()-> new ModelNotFoundException("ID NOT FOUND: " + id));
         if(project != null){
             projectDb.setName(project.getName());
             projectDb.setCompany(project.getCompany());
@@ -47,7 +48,7 @@ public class ProjectServiceImpl implements IProjectService {
 
     @Override
     public boolean deleteProject(Long id) {
-        Project projectDb = projectRepository.findById(id).orElse(null);
+        Project projectDb = projectRepository.findById(id).orElseThrow(()-> new ModelNotFoundException("ID NOT FOUND: " + id));
         if(projectDb != null){
             projectDb.setStatus(0);
             projectRepository.save(projectDb);

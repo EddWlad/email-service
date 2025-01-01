@@ -17,10 +17,12 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name= "recipients")
 public class Recipients {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @NotBlank

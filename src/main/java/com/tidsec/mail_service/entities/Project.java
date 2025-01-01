@@ -13,10 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name= "project")
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -25,7 +27,7 @@ public class Project {
     @Column(nullable = false, unique = true)
     private String company;
 
-    @Column
+    @Column(nullable = true, length = 200)
     private String description;
 
     @Column(nullable = false)

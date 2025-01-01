@@ -13,16 +13,18 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name= "mailingGroup")
 public class MailingGroup {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String nameGroup;
 
-    @Column
+    @Column(nullable = true, length = 200)
     private String description;
 
     @Column(nullable = false)

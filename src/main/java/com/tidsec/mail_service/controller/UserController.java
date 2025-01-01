@@ -30,7 +30,7 @@ public class UserController {
                         .lastName(user.getLastName())
                         .email(user.getEmail())
                         .password(user.getPassword())
-                        .role(user.getRole())
+                        //.role(user.getRole())
                         .status(user.getStatus())
                         .build())
                 .toList();
@@ -50,7 +50,7 @@ public class UserController {
                     .lastName(user.getLastName())
                     .email(user.getEmail())
                     .password(user.getPassword())
-                    .role(user.getRole())
+                    //.role(user.getRole())
                     .status(user.getStatus())
                     .build();
             return ResponseEntity.ok(userDTO);
@@ -71,7 +71,7 @@ public class UserController {
                 .lastName(userDTO.getLastName())
                 .email(userDTO.getEmail())
                 .password(userDTO.getPassword())
-                .role(userDTO.getRole())
+                //.role(userDTO.getRole())
                 .status(userDTO.getStatus())
                 .build());
         return ResponseEntity.created(new URI("/api/user/save")).build();
@@ -87,7 +87,7 @@ public class UserController {
             user.setLastName(userDTO.getLastName());
             user.setEmail(userDTO.getEmail());
             user.setPassword(userDTO.getPassword());
-            user.setRole(userDTO.getRole());
+            //user.setRole(userDTO.getRole());
             user.setStatus(userDTO.getStatus());
 
             userService.updateUser(id, user);

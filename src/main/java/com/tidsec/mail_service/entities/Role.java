@@ -13,10 +13,12 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name= "role")
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -25,9 +27,9 @@ public class Role {
     @Column
     private String description;
 
-    @OneToMany(mappedBy = "role",cascade=CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    /*@OneToMany(mappedBy = "role",cascade={ CascadeType.ALL }, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonIgnore
-    private List<User> users = new ArrayList<User>();
+    private List<User> users = new ArrayList<User>();*/
 
 
     @Column(nullable = false)

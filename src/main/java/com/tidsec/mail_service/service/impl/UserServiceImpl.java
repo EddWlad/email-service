@@ -1,6 +1,7 @@
 package com.tidsec.mail_service.service.impl;
 
 import com.tidsec.mail_service.entities.User;
+import com.tidsec.mail_service.exception.ModelNotFoundException;
 import com.tidsec.mail_service.repositories.IUserRepository;
 import com.tidsec.mail_service.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public User updateUser(Long id, User user) {
-        User userDb = userRepository.findById(id).orElse(null);
+        User userDb = userRepository.findById(id).orElseThrow(()-> new ModelNotFoundException("ID NOT FOUND: " + id));
         if(user != null)
         {
             userDb.setName(user.getName());
@@ -39,7 +40,7 @@ public class UserServiceImpl implements IUserService {
             userDb.setDateCreate(user.getDateCreate());
             userDb.setPassword(user.getPassword());
             userDb.setIdentification(user.getIdentification());
-            userDb.setRole(user.getRole());
+            //userDb.setRole(user.getRole());
             userDb.setStatus(user.getStatus());
             return userRepository.save(userDb);
         }
