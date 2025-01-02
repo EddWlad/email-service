@@ -5,6 +5,7 @@ import com.tidsec.mail_service.entities.Role;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,6 +20,6 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String password;
-    //private Role role;
+    private List<Long> roles;
     private Integer status;
 }

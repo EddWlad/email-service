@@ -1,21 +1,17 @@
 package com.tidsec.mail_service.controller;
 
 import com.tidsec.mail_service.entities.*;
-import com.tidsec.mail_service.model.AttachmentsDTO;
+
 import com.tidsec.mail_service.model.MailDTO;
 import com.tidsec.mail_service.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,8 +28,6 @@ public class MailController {
     @Autowired
     private IRecipientsService recipientsService;
 
-    @Autowired
-    private IAttachmentsService attachmentsService;
 
     @Autowired
     private IMailingGroupService mailingGroupService;

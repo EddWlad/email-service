@@ -1,17 +1,15 @@
 package com.tidsec.mail_service.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class SupplierDTO {
-
+    @EqualsAndHashCode.Include
     private Long id;
     private String ruc;
     private String name;

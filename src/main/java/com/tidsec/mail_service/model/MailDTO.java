@@ -10,8 +10,9 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MailDTO {
+    @EqualsAndHashCode.Include
     private Long id;
     private Long idRecipients;
     private MailingGroup mailingGroup;

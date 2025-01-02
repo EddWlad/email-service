@@ -2,10 +2,7 @@ package com.tidsec.mail_service.model;
 
 import com.tidsec.mail_service.entities.User;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +11,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class RoleDTO {
-
+    @EqualsAndHashCode.Include
     private Long id;
     private String name;
     private String description;
