@@ -24,14 +24,14 @@ public class Project {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, length = 50)
     private String company;
 
     @Column(nullable = true, length = 200)
     private String description;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
     @OneToMany (mappedBy = "project", cascade=CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonIgnore

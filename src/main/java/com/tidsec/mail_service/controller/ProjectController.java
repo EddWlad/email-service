@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("api/project")
+@CrossOrigin(origins = "*")
 public class ProjectController {
     @Autowired
     private IProjectService projectService;
@@ -77,7 +80,9 @@ public class ProjectController {
             project.setStatus(projectDTO.getStatus());
 
             projectService.updateProject(id, project);
-            return ResponseEntity.ok("Proyecto actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Proyecto actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -85,10 +90,13 @@ public class ProjectController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
         boolean result = projectService.deleteProject(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Proyecto eliminado correctamente");
+            response.put("message", "Proyecto eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el proyecto");
+            response.put("message", "Error al intentar eliminar el proyecto");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
