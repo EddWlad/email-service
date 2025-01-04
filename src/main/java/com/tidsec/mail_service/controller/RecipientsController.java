@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -83,7 +85,9 @@ public class RecipientsController {
             recipient.setStatus(recipientsDTO.getStatus());
 
             recipientsService.updateRecipients(id, recipient);
-            return ResponseEntity.ok("Destinatario actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Destinatario actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -91,10 +95,13 @@ public class RecipientsController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteRecipient(@PathVariable Long id) {
         boolean result = recipientsService.deleteRecipients(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Destinatario eliminado correctamente");
+            response.put("message", "Destinatario eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar al destinatario");
+            response.put("message", "Error al intentar eliminar el destinatario");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

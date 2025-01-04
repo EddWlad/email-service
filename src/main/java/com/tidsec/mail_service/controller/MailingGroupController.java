@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -105,7 +107,9 @@ public class MailingGroupController {
 
             group.setRecipients(updatedRecipients);
             mailingGroupService.updateMailingGroup(id, group);
-            return ResponseEntity.ok("Grupo de mailing actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Grupo de mail actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -113,10 +117,13 @@ public class MailingGroupController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMailingGroup(@PathVariable Long id) {
         boolean result = mailingGroupService.deleteMailingGroup(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Grupo de mailing eliminado correctamente");
+            response.put("message", "Grupo de email eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el grupo de mailing");
+            response.put("message", "Error al intentar eliminar el grupo de email");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

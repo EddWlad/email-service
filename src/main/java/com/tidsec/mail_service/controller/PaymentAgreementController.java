@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -73,7 +75,9 @@ public class PaymentAgreementController {
             agreement.setStatus(agreementDTO.getStatus());
 
             paymentAgreementService.updatePaymentAgreement(id, agreement);
-            return ResponseEntity.ok("Acuerdo de pago actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Forma de pago actualizada exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -81,10 +85,13 @@ public class PaymentAgreementController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteAgreement(@PathVariable Long id) {
         boolean result = paymentAgreementService.deletePaymentAgreement(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Acuerdo de pago eliminado correctamente");
+            response.put("message", "Forma de pago eliminada correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el acuerdo de pago");
+            response.put("message", "Error al intentar eliminar la forma de pago");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

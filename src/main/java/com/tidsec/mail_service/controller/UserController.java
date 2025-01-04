@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -116,7 +118,9 @@ public class UserController {
             user.setStatus(userDTO.getStatus());
 
             userService.updateUser(id, user);
-            return ResponseEntity.ok("Usuario actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Usuario actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -124,10 +128,13 @@ public class UserController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         boolean result = userService.deleteUser(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Usuario eliminado exitosamente");
+            response.put("message", "Usuario eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el usuario");
+            response.put("message", "Error al intentar eliminar el usuario");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

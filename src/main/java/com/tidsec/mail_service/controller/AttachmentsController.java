@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -72,7 +74,9 @@ public class AttachmentsController {
             attachments.setMail(attachmentsDTO.getMail());
 
             attachmentsService.updateAttachments(id,attachments);
-            return ResponseEntity.ok("Archivos actualizados exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Archivo adjunto actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -80,10 +84,13 @@ public class AttachmentsController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteAttachemnts(@PathVariable Long id){
         boolean result = attachmentsService.deleteAttachments(id);
-        if(result){
-            return ResponseEntity.ok("Archvos eliminados exitosamente");
-        }else{
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el archivo");
+        Map<String, String> response = new HashMap<>();
+        if (result) {
+            response.put("message", "Archivo adjunto eliminado correctamente");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Error al intentar eliminar el archivo adjunto");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

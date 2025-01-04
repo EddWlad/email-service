@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,7 +121,9 @@ public class MailController {
             mail.setStatus(mailDTO.getStatus());
 
             mailService.updateMail(id, mail);
-            return ResponseEntity.ok("Correo actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Email actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -128,10 +131,13 @@ public class MailController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMail(@PathVariable Long id) {
         boolean result = mailService.deleteMail(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Correo eliminado correctamente");
+            response.put("message", "Email eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el correo");
+            response.put("message", "Error al intentar eliminar el email");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 

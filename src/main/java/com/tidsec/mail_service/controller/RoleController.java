@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -72,7 +74,9 @@ public class RoleController {
             role.setStatus(roleDTO.getStatus());
 
             roleService.updateRole(id, role);
-            return ResponseEntity.ok("Rol actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Rol actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -80,10 +84,13 @@ public class RoleController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteRole(@PathVariable Long id) {
         boolean result = roleService.deleteRole(id);
+        Map<String, String> response = new HashMap<>();
         if (result) {
-            return ResponseEntity.ok("Rol eliminado exitosamente");
+            response.put("message", "Rol eliminado correctamente");
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.badRequest().body("Error al intentar eliminar el rol");
+            response.put("message", "Error al intentar eliminar el rol");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

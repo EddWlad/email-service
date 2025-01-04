@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -76,7 +78,9 @@ public class SupplierController {
             supplier.setStatus(supplierDTO.getStatus());
 
             supplierService.updateSupplier(id, supplier);
-            return ResponseEntity.ok("Proveedor actualizado exitosamente");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Proveedor actualizado exitosamente");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
     }
@@ -84,10 +88,13 @@ public class SupplierController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteSupplier(@PathVariable Long id){
         boolean result = supplierService.deleteSupplier(id);
-        if(result){
-            return ResponseEntity.ok("Proveedor eliminado correctamente");
-        }else{
-            return ResponseEntity.badRequest().body("Error al intentar eliminar al proveedor");
+        Map<String, String> response = new HashMap<>();
+        if (result) {
+            response.put("message", "Proveedor eliminado correctamente");
+            return ResponseEntity.ok(response);
+        } else {
+            response.put("message", "Error al intentar eliminar el proveedor");
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
