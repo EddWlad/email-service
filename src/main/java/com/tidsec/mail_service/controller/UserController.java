@@ -6,9 +6,11 @@ import com.tidsec.mail_service.entities.User;
 import com.tidsec.mail_service.model.UserDTO;
 import com.tidsec.mail_service.service.IRoleService;
 import com.tidsec.mail_service.service.IUserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -20,12 +22,12 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/user")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    private IUserService userService;
 
-    @Autowired
-    private IRoleService roleService;
+    private final IUserService userService;
+
+    private final IRoleService roleService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -68,7 +70,7 @@ public class UserController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveUser(@RequestBody UserDTO userDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveUser(@RequestBody UserDTO userDTO) {
         if (userDTO.getName() == null || userDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del usuario es obligatorio");
         }
@@ -92,9 +94,13 @@ public class UserController {
                 .status(userDTO.getStatus())
                 .build();
 
-        userService.saveUser(user);
+        User obj = userService.save(user);
 
-        return ResponseEntity.created(new URI("/api/user/save")).build();
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -117,7 +123,7 @@ public class UserController {
             user.setRoles(updatedRoles);
             user.setStatus(userDTO.getStatus());
 
-            userService.updateUser(id, user);
+            userService.update(id, user);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Usuario actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -127,7 +133,7 @@ public class UserController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
-        boolean result = userService.deleteUser(id);
+        boolean result = userService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Usuario eliminado correctamente");

@@ -3,9 +3,10 @@ package com.tidsec.mail_service.controller;
 import com.tidsec.mail_service.entities.Project;
 import com.tidsec.mail_service.model.ProjectDTO;
 import com.tidsec.mail_service.service.IProjectService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,10 +17,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/project")
-//@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ProjectController {
-    @Autowired
-    private IProjectService projectService;
+
+    private final IProjectService projectService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -54,19 +55,24 @@ public class ProjectController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveProject(@RequestBody ProjectDTO projectDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveProject(@RequestBody ProjectDTO projectDTO) {
         if (projectDTO.getName() == null || projectDTO.getName().isBlank() ||
                 projectDTO.getCompany() == null || projectDTO.getCompany().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del proyecto y la compañía son necesarios");
         }
-        projectService.saveProject(Project.builder()
+        Project obj = projectService.save(Project.builder()
                 .id(projectDTO.getId())
                 .name(projectDTO.getName())
                 .company(projectDTO.getCompany())
                 .description(projectDTO.getDescription())
                 .status(projectDTO.getStatus())
                 .build());
-        return ResponseEntity.created(new URI("/api/project/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -79,7 +85,7 @@ public class ProjectController {
             project.setDescription(projectDTO.getDescription());
             project.setStatus(projectDTO.getStatus());
 
-            projectService.updateProject(id, project);
+            projectService.update(id, project);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Proyecto actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -89,7 +95,7 @@ public class ProjectController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
-        boolean result = projectService.deleteProject(id);
+        boolean result = projectService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Proyecto eliminado correctamente");

@@ -5,9 +5,11 @@ import com.tidsec.mail_service.entities.Recipients;
 import com.tidsec.mail_service.model.MailingGroupDTO;
 import com.tidsec.mail_service.service.IMailingGroupService;
 import com.tidsec.mail_service.service.IRecipientsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,9 +21,10 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/mailingGroup")
+@RequiredArgsConstructor
 public class MailingGroupController {
-    @Autowired
-    private IMailingGroupService mailingGroupService;
+
+    private final IMailingGroupService mailingGroupService;
 
     @Autowired
     private IRecipientsService recipientsService;
@@ -65,7 +68,7 @@ public class MailingGroupController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveMailingGroup(@RequestBody MailingGroupDTO groupDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveMailingGroup(@RequestBody MailingGroupDTO groupDTO) {
         if (groupDTO.getNameGroup() == null || groupDTO.getNameGroup().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del grupo es obligatorio");
         }
@@ -85,8 +88,13 @@ public class MailingGroupController {
                 .recipients(recipients)
                 .build();
 
-        mailingGroupService.saveMailingGroup(mailingGroup);
-        return ResponseEntity.created(new URI("/api/mailingGroup/save")).build();
+        MailingGroup obj = mailingGroupService.save(mailingGroup);
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -106,7 +114,7 @@ public class MailingGroupController {
                     .collect(Collectors.toList());
 
             group.setRecipients(updatedRecipients);
-            mailingGroupService.updateMailingGroup(id, group);
+            mailingGroupService.update(id, group);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Grupo de mail actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -116,7 +124,7 @@ public class MailingGroupController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMailingGroup(@PathVariable Long id) {
-        boolean result = mailingGroupService.deleteMailingGroup(id);
+        boolean result = mailingGroupService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Grupo de email eliminado correctamente");

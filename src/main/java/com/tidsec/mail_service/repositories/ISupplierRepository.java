@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface ISupplierRepository extends JpaRepository<Supplier, Long> {
-    List<Supplier> findByStatusNot(Integer status);
+public interface ISupplierRepository extends IGenericRepository<Supplier, Long> {
 }

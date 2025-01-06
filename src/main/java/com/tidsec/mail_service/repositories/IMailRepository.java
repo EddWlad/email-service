@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface IMailRepository extends JpaRepository<Mail, Long> {
-    List<Mail> findByStatusNot(Integer status);
+public interface IMailRepository extends IGenericRepository<Mail, Long> {
 }

@@ -3,9 +3,11 @@ package com.tidsec.mail_service.controller;
 import com.tidsec.mail_service.entities.Supplier;
 import com.tidsec.mail_service.model.SupplierDTO;
 import com.tidsec.mail_service.service.ISupplierService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,9 +18,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/supplier")
+@RequiredArgsConstructor
 public class SupplierController {
-    @Autowired
-    private ISupplierService supplierService;
+
+    private final ISupplierService supplierService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -53,18 +56,23 @@ public class SupplierController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveSupplier(@RequestBody SupplierDTO supplierDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveSupplier(@RequestBody SupplierDTO supplierDTO) {
         if (supplierDTO.getName() == null || supplierDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del proveedor es necesario");
         }
-        supplierService.saveSupplier(Supplier.builder()
+        Supplier obj = supplierService.save(Supplier.builder()
                 .id(supplierDTO.getId())
                 .ruc(supplierDTO.getRuc())
                 .name(supplierDTO.getName())
                 .status(supplierDTO.getStatus())
                 .email(supplierDTO.getEmail())
                 .build());
-        return ResponseEntity.created(new URI("/api/supplier/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -77,7 +85,7 @@ public class SupplierController {
             supplier.setEmail(supplierDTO.getEmail());
             supplier.setStatus(supplierDTO.getStatus());
 
-            supplierService.updateSupplier(id, supplier);
+            supplierService.update(id, supplier);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Proveedor actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -87,7 +95,7 @@ public class SupplierController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteSupplier(@PathVariable Long id){
-        boolean result = supplierService.deleteSupplier(id);
+        boolean result = supplierService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Proveedor eliminado correctamente");

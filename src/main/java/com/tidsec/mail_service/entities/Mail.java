@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,7 @@ public class Mail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "mailingGroup_id", nullable = false)
+    @JoinColumn(name = "mailingGroup_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_MAILING-GROUP"))
     private MailingGroup mailingGroup;
 
     @NotBlank
@@ -41,25 +42,25 @@ public class Mail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "supplier_id", nullable = false)
+    @JoinColumn(name = "supplier_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_SUPPLIER"))
     private Supplier supplier;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "project_id", nullable = false)
+    @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_PROJECT"))
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "paymentAgreement_id", nullable = false)
+    @JoinColumn(name = "paymentAgreement_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_PAYMENT-AGREEMENT"))
     private PaymentAgreement paymentAgreement;
 
     @OneToMany (mappedBy = "mail", cascade=CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
     private List<Attachments> attachments = new ArrayList<Attachments>();
 
-    @Temporal(TemporalType.DATE)
-    private Date dateCreate = new Date();
+    @Column(nullable = false)
+    private LocalDateTime dateCreate;
 
     @Column(nullable = true)
     private String observation;
@@ -67,10 +68,4 @@ public class Mail {
     @Column(nullable = false)
     private Integer status;
 
-    @PrePersist
-    protected void onCreate() {
-        if (dateCreate == null) {
-            dateCreate = new Date();
-        }
-    }
 }

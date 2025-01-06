@@ -3,9 +3,11 @@ package com.tidsec.mail_service.controller;
 import com.tidsec.mail_service.entities.Role;
 import com.tidsec.mail_service.model.RoleDTO;
 import com.tidsec.mail_service.service.IRoleService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,9 +18,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/role")
+@RequiredArgsConstructor
 public class RoleController {
-    @Autowired
-    private IRoleService roleService;
+
+    private final IRoleService roleService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -51,17 +54,22 @@ public class RoleController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveRole(@RequestBody RoleDTO roleDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveRole(@RequestBody RoleDTO roleDTO) {
         if (roleDTO.getName() == null || roleDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del rol es obligatorio");
         }
-        roleService.saveRole(Role.builder()
+        Role obj = roleService.save(Role.builder()
                 .id(roleDTO.getId())
                 .name(roleDTO.getName())
                 .description(roleDTO.getDescription())
                 .status(roleDTO.getStatus())
                 .build());
-        return ResponseEntity.created(new URI("/api/role/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -73,7 +81,7 @@ public class RoleController {
             role.setDescription(roleDTO.getDescription());
             role.setStatus(roleDTO.getStatus());
 
-            roleService.updateRole(id, role);
+            roleService.update(id, role);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Rol actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -83,7 +91,7 @@ public class RoleController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteRole(@PathVariable Long id) {
-        boolean result = roleService.deleteRole(id);
+        boolean result = roleService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Rol eliminado correctamente");

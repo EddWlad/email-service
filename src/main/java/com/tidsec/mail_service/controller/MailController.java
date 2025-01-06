@@ -4,9 +4,11 @@ import com.tidsec.mail_service.entities.*;
 
 import com.tidsec.mail_service.model.MailDTO;
 import com.tidsec.mail_service.service.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 
 import java.net.URI;
@@ -19,27 +21,21 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/mail")
+@RequiredArgsConstructor
 public class MailController {
-    @Autowired
-    private IMailService mailService;
 
-    @Autowired
-    private IUserService userService;
+    private final IMailService mailService;
 
-    @Autowired
-    private IRecipientsService recipientsService;
+    private final IUserService userService;
 
+    private final IRecipientsService recipientsService;
 
-    @Autowired
-    private IMailingGroupService mailingGroupService;
+    private final IMailingGroupService mailingGroupService;
 
-    @Autowired
-    private ISupplierService supplierService;
+    private final ISupplierService supplierService;
 
-    @Autowired
-    private IPaymentAgreementService paymentAgreementService;
+    private final IPaymentAgreementService paymentAgreementService;
 
-    @Autowired
     private IProjectService projectService;
 
     @GetMapping("/findAll")
@@ -87,8 +83,8 @@ public class MailController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveMail(@RequestBody MailDTO mailDTO) throws URISyntaxException {
-        mailService.saveMail(Mail.builder()
+    public ResponseEntity<?> saveMail(@RequestBody MailDTO mailDTO) {
+        Mail obj =mailService.save(Mail.builder()
                 .id(mailDTO.getId())
                 .idRecipients(mailDTO.getIdRecipients())
                 .mailingGroup(mailDTO.getMailingGroup())
@@ -101,7 +97,12 @@ public class MailController {
                 .observation(mailDTO.getObservation())
                 .status(mailDTO.getStatus())
                 .build());
-        return ResponseEntity.created(new URI("/api/mail/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -120,7 +121,7 @@ public class MailController {
             mail.setObservation(mailDTO.getObservation());
             mail.setStatus(mailDTO.getStatus());
 
-            mailService.updateMail(id, mail);
+            mailService.update(id, mail);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Email actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -130,7 +131,7 @@ public class MailController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteMail(@PathVariable Long id) {
-        boolean result = mailService.deleteMail(id);
+        boolean result = mailService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Email eliminado correctamente");

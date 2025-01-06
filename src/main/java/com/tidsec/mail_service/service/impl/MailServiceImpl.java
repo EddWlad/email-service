@@ -1,11 +1,14 @@
 package com.tidsec.mail_service.service.impl;
 
 import com.tidsec.mail_service.entities.*;
+import com.tidsec.mail_service.exception.ModelNotFoundException;
+import com.tidsec.mail_service.repositories.IGenericRepository;
 import com.tidsec.mail_service.repositories.IMailRepository;
 import com.tidsec.mail_service.service.IAttachmentsService;
 import com.tidsec.mail_service.service.IMailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,31 +21,36 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class MailServiceImpl implements IMailService {
-    @Autowired
-    private IMailRepository mailRepository;
+@RequiredArgsConstructor
+public class MailServiceImpl extends GenericServiceImpl<Mail, Long> implements IMailService {
 
-    @Autowired
-    private IAttachmentsService attachmentsService;
-    @Autowired
-    private JavaMailSender mailSender;
-    @Override
+    private final IMailRepository mailRepository;
+
+    private final IAttachmentsService attachmentsService;
+
+    private final JavaMailSender mailSender;
+
+    /*@Override
     public List<Mail> getAll() {
         return mailRepository.findByStatusNot(0);
     }
 
     @Override
     public Optional<Mail> findById(Long id) {
-        return mailRepository.findById(id);
+        return mailRepository.findById(id)
+                .filter(mail -> mail.getStatus() != 0)
+                .or(() -> {
+                    throw new ModelNotFoundException("ID NOT FOUND: " + id);
+                });
     }
 
     @Override
-    public Mail saveMail(Mail mail) {
+    public Mail save(Mail mail) {
         return mailRepository.save(mail);
     }
 
     @Override
-    public Mail updateMail(Long id, Mail mail) {
+    public Mail update(Long id, Mail mail) {
         Mail mailDb = mailRepository.findById(id).orElse(null);
         if(mail != null){
             mailDb.setIdRecipients(mail.getIdRecipients());
@@ -64,22 +72,19 @@ public class MailServiceImpl implements IMailService {
     }
 
     @Override
-    public boolean deleteMail(Long id) {
-        Mail mailDb = mailRepository.findById(id).orElse(null);
-        if(mailDb != null){
-            mailDb.setStatus(0);
-            mailRepository.save(mailDb);
-            return true;
-        }
-        else{
-            return false;
-        }
+    public boolean delete(Long id) {
+        Mail mailDb = mailRepository.findById(id)
+                .filter(mail -> mail.getStatus() != 0)
+                .orElseThrow(() -> new ModelNotFoundException("ID NOT FOUND OR INACTIVE: " + id));
+        mailDb.setStatus(0);
+        mailRepository.save(mailDb);
+        return true;
     }
 
     @Override
-    public Long countMail() {
+    public Long count() {
         return mailRepository.count();
-    }
+    }*/
 
     @Override
     public void sendMailWithFile(Long mailId, User user, Recipients toRecipients, MailingGroup mailingGroup, Supplier supplier, Project project,
@@ -131,5 +136,10 @@ public class MailServiceImpl implements IMailService {
     @Override
     public void sendMail(String toRecipients, List<String> copyRecipients, File file, String subject, String message) {
 
+    }
+
+    @Override
+    protected IGenericRepository<Mail, Long> getRepo() {
+        return mailRepository;
     }
 }

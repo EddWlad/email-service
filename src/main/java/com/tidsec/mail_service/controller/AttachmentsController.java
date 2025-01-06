@@ -3,9 +3,11 @@ package com.tidsec.mail_service.controller;
 import com.tidsec.mail_service.entities.Attachments;
 import com.tidsec.mail_service.model.AttachmentsDTO;
 import com.tidsec.mail_service.service.IAttachmentsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,9 +18,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/attachment")
+@RequiredArgsConstructor
 public class AttachmentsController {
-    @Autowired
-    private IAttachmentsService attachmentsService;
+
+    private final IAttachmentsService attachmentsService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -55,13 +58,18 @@ public class AttachmentsController {
         if (attachmentsDTO.getRouteAttachment() == null || attachmentsDTO.getRouteAttachment().isBlank()) {
             return ResponseEntity.badRequest().body("La ruta del archivo es obligatorio");
         }
-        attachmentsService.saveAttachments(Attachments.builder()
+        Attachments obj = attachmentsService.save(Attachments.builder()
                 .id(attachmentsDTO.getId())
                 .mail(attachmentsDTO.getMail())
                 .status(attachmentsDTO.getStatus())
                 .routeAttachment(attachmentsDTO.getRouteAttachment())
                 .build());
-        return ResponseEntity.created(new URI("api/attachment/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -73,7 +81,7 @@ public class AttachmentsController {
             attachments.setStatus(attachmentsDTO.getStatus());
             attachments.setMail(attachmentsDTO.getMail());
 
-            attachmentsService.updateAttachments(id,attachments);
+            attachmentsService.update(id,attachments);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Archivo adjunto actualizado exitosamente");
             return ResponseEntity.ok(response);
@@ -83,7 +91,7 @@ public class AttachmentsController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteAttachemnts(@PathVariable Long id){
-        boolean result = attachmentsService.deleteAttachments(id);
+        boolean result = attachmentsService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Archivo adjunto eliminado correctamente");

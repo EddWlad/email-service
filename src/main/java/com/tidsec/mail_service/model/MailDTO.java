@@ -5,6 +5,7 @@ import com.tidsec.mail_service.entities.Project;
 import com.tidsec.mail_service.entities.Supplier;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 @Data
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class MailDTO {
     private Supplier supplier;
     private Project project;
     private PaymentAgreement paymentAgreement;
-    private Date dateCreate = new Date();
+    private LocalDateTime dateCreate;
     private String observation;
     private Integer status;
 }

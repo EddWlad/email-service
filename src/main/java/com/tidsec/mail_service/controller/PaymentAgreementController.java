@@ -4,9 +4,11 @@ package com.tidsec.mail_service.controller;
 import com.tidsec.mail_service.entities.PaymentAgreement;
 import com.tidsec.mail_service.model.PaymentAgreementDTO;
 import com.tidsec.mail_service.service.IPaymentAgreementService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,9 +19,10 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("api/paymentAgreement")
+@RequiredArgsConstructor
 public class PaymentAgreementController {
-    @Autowired
-    private IPaymentAgreementService paymentAgreementService;
+
+    private final IPaymentAgreementService paymentAgreementService;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
@@ -52,17 +55,22 @@ public class PaymentAgreementController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveAgreement(@RequestBody PaymentAgreementDTO agreementDTO) throws URISyntaxException {
+    public ResponseEntity<?> saveAgreement(@RequestBody PaymentAgreementDTO agreementDTO) {
         if (agreementDTO.getName() == null || agreementDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del acuerdo de pago es necesario");
         }
-        paymentAgreementService.savePaymentAgreement(PaymentAgreement.builder()
+        PaymentAgreement obj = paymentAgreementService.save(PaymentAgreement.builder()
                 .id(agreementDTO.getId())
                 .name(agreementDTO.getName())
                 .description(agreementDTO.getDescription())
                 .status(agreementDTO.getStatus())
                 .build());
-        return ResponseEntity.created(new URI("/api/paymentAgreement/save")).build();
+
+        URI location = ServletUriComponentsBuilder.
+                fromCurrentRequest().
+                path("{id}").buildAndExpand(obj.getId()).toUri();
+
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/update/{id}")
@@ -74,7 +82,7 @@ public class PaymentAgreementController {
             agreement.setDescription(agreementDTO.getDescription());
             agreement.setStatus(agreementDTO.getStatus());
 
-            paymentAgreementService.updatePaymentAgreement(id, agreement);
+            paymentAgreementService.update(id, agreement);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Forma de pago actualizada exitosamente");
             return ResponseEntity.ok(response);
@@ -84,7 +92,7 @@ public class PaymentAgreementController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteAgreement(@PathVariable Long id) {
-        boolean result = paymentAgreementService.deletePaymentAgreement(id);
+        boolean result = paymentAgreementService.delete(id);
         Map<String, String> response = new HashMap<>();
         if (result) {
             response.put("message", "Forma de pago eliminada correctamente");

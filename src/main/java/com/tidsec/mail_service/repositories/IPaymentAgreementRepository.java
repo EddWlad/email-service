@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface IPaymentAgreementRepository extends JpaRepository<PaymentAgreement, Long> {
-    List<PaymentAgreement> findByStatusNot(Integer status);
+public interface IPaymentAgreementRepository extends IGenericRepository<PaymentAgreement, Long> {
 }

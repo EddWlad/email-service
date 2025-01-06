@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface IRecipientsRepository extends JpaRepository<Recipients, Long> {
-    List<Recipients> findByStatusNot(Integer status);
+public interface IRecipientsRepository extends IGenericRepository<Recipients, Long> {
 }

@@ -19,7 +19,7 @@ public class Attachments {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
-    @JoinColumn(name = "mail_id", nullable = false)
+    @JoinColumn(name = "mail_id", nullable = false, foreignKey = @ForeignKey(name = "FK_ATTACHMENTS_MAIL"))
     private Mail mail;
 
     @Column(name = "route_attachment", nullable = false)

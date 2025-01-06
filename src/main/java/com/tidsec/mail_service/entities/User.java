@@ -62,6 +62,9 @@ public class User {
     private List<Role> roles;
 
     @Column(nullable = false)
+    private boolean enabled;
+
+    @Column(nullable = false)
     private Integer status;
 
     @PrePersist

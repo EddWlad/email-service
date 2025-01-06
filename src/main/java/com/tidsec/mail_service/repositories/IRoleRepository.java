@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 @Repository
-public interface IRoleRepository extends JpaRepository<Role, Long> {
-    List<Role> findByStatusNot(Integer status);
+public interface IRoleRepository extends IGenericRepository<Role, Long> {
 }
