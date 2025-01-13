@@ -4,12 +4,12 @@ import com.tidsec.mail_service.entities.Project;
 import com.tidsec.mail_service.model.ProjectDTO;
 import com.tidsec.mail_service.service.IProjectService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,18 +21,13 @@ import java.util.Optional;
 public class ProjectController {
 
     private final IProjectService projectService;
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<ProjectDTO> projectList = projectService.getAll()
                 .stream()
-                .map(project -> ProjectDTO.builder()
-                        .id(project.getId())
-                        .name(project.getName())
-                        .company(project.getCompany())
-                        .description(project.getDescription())
-                        .status(project.getStatus())
-                        .build())
+                .map((Project obj) -> convertToDto(Optional.ofNullable(obj)))
                 .toList();
         return ResponseEntity.ok(projectList);
     }
@@ -41,15 +36,8 @@ public class ProjectController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Project> projectOptional = projectService.findById(id);
         if (projectOptional.isPresent()) {
-            Project project = projectOptional.get();
-            ProjectDTO projectDTO = ProjectDTO.builder()
-                    .id(project.getId())
-                    .name(project.getName())
-                    .company(project.getCompany())
-                    .description(project.getDescription())
-                    .status(project.getStatus())
-                    .build();
-            return ResponseEntity.ok(projectDTO);
+
+            return ResponseEntity.ok(convertToDto(projectOptional));
         }
         return ResponseEntity.notFound().build();
     }
@@ -60,13 +48,7 @@ public class ProjectController {
                 projectDTO.getCompany() == null || projectDTO.getCompany().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del proyecto y la compañía son necesarios");
         }
-        Project obj = projectService.save(Project.builder()
-                .id(projectDTO.getId())
-                .name(projectDTO.getName())
-                .company(projectDTO.getCompany())
-                .description(projectDTO.getDescription())
-                .status(projectDTO.getStatus())
-                .build());
+        Project obj = projectService.save(convertToEntity(projectDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -79,16 +61,12 @@ public class ProjectController {
     public ResponseEntity<?> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
         Optional<Project> projectOptional = projectService.findById(id);
         if (projectOptional.isPresent()) {
-            Project project = projectOptional.get();
-            project.setName(projectDTO.getName());
-            project.setCompany(projectDTO.getCompany());
-            project.setDescription(projectDTO.getDescription());
-            project.setStatus(projectDTO.getStatus());
+            Project obj = projectService.update(id, convertToEntity(projectDTO));
 
-            projectService.update(id, project);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Proyecto actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -104,5 +82,13 @@ public class ProjectController {
             response.put("message", "Error al intentar eliminar el proyecto");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    private ProjectDTO convertToDto(Optional<Project> obj){
+        return modelMapper.map(obj, ProjectDTO.class);
+    }
+
+    private Project convertToEntity(ProjectDTO dto){
+        return modelMapper.map(dto, Project.class );
     }
 }

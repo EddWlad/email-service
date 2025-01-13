@@ -16,4 +16,5 @@ public class MailingGroupDTO {
     private String description;
     private Integer status;
     private List<Long> recipientIds;
+    private List<String> recipientNames;
 }

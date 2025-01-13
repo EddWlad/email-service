@@ -21,7 +21,7 @@ public class RoleServiceImpl extends GenericServiceImpl<Role, Long> implements I
 
     @Override
     protected IGenericRepository<Role, Long> getRepo() {
-        return null;
+        return roleRepository;
     }
 
     /*@Override

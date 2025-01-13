@@ -4,6 +4,7 @@ import com.tidsec.mail_service.entities.Attachments;
 import com.tidsec.mail_service.model.AttachmentsDTO;
 import com.tidsec.mail_service.service.IAttachmentsService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,17 +23,13 @@ import java.util.Optional;
 public class AttachmentsController {
 
     private final IAttachmentsService attachmentsService;
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<AttachmentsDTO> attachmentsList = attachmentsService.getAll()
                 .stream()
-                .map(attachments -> AttachmentsDTO.builder()
-                        .id(attachments.getId())
-                        .status(attachments.getStatus())
-                        .mail(attachments.getMail())
-                        .routeAttachment(attachments.getRouteAttachment())
-                        .build())
+                .map((Attachments obj) -> convertToDto(Optional.ofNullable(obj)))
                 .toList();
         return ResponseEntity.ok(attachmentsList);
     }
@@ -41,14 +38,7 @@ public class AttachmentsController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Attachments> attachmentsOptional = attachmentsService.findById(id);
         if (attachmentsOptional.isPresent()) {
-            Attachments attachments = attachmentsOptional.get();
-            AttachmentsDTO attachmentsDTO = AttachmentsDTO.builder()
-                    .id(attachments.getId())
-                    .mail(attachments.getMail())
-                    .status(attachments.getStatus())
-                    .routeAttachment(attachments.getRouteAttachment())
-                    .build();
-            return ResponseEntity.ok(attachmentsDTO);
+            return ResponseEntity.ok(convertToDto(attachmentsOptional));
         }
         return ResponseEntity.notFound().build();
     }
@@ -58,12 +48,7 @@ public class AttachmentsController {
         if (attachmentsDTO.getRouteAttachment() == null || attachmentsDTO.getRouteAttachment().isBlank()) {
             return ResponseEntity.badRequest().body("La ruta del archivo es obligatorio");
         }
-        Attachments obj = attachmentsService.save(Attachments.builder()
-                .id(attachmentsDTO.getId())
-                .mail(attachmentsDTO.getMail())
-                .status(attachmentsDTO.getStatus())
-                .routeAttachment(attachmentsDTO.getRouteAttachment())
-                .build());
+        Attachments obj = attachmentsService.save(convertToEntity(attachmentsDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -76,15 +61,12 @@ public class AttachmentsController {
     public ResponseEntity<?> updateAttachments(@PathVariable Long id, @RequestBody AttachmentsDTO attachmentsDTO){
         Optional<Attachments> attachmentsOptional = attachmentsService.findById(id);
         if(attachmentsOptional.isPresent()){
-            Attachments attachments = attachmentsOptional.get();
-            attachments.setRouteAttachment(attachmentsDTO.getRouteAttachment());
-            attachments.setStatus(attachmentsDTO.getStatus());
-            attachments.setMail(attachmentsDTO.getMail());
+            Attachments obj = attachmentsService.update(id,convertToEntity(attachmentsDTO));
 
-            attachmentsService.update(id,attachments);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Archivo adjunto actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -102,4 +84,11 @@ public class AttachmentsController {
         }
     }
 
+    private AttachmentsDTO convertToDto(Optional<Attachments> obj){
+        return  modelMapper.map(obj, AttachmentsDTO.class);
+    }
+
+    private Attachments convertToEntity(AttachmentsDTO dto){
+        return  modelMapper.map(dto, Attachments.class);
+    }
 }

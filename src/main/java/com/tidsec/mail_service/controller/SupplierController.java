@@ -4,6 +4,7 @@ import com.tidsec.mail_service.entities.Supplier;
 import com.tidsec.mail_service.model.SupplierDTO;
 import com.tidsec.mail_service.service.ISupplierService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,18 +23,13 @@ import java.util.Optional;
 public class SupplierController {
 
     private final ISupplierService supplierService;
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<SupplierDTO> supplierList = supplierService.getAll()
                 .stream()
-                .map(supplier -> SupplierDTO.builder()
-                        .id(supplier.getId())
-                        .ruc(supplier.getRuc())
-                        .name(supplier.getName())
-                        .email(supplier.getEmail())
-                        .status(supplier.getStatus())
-                        .build())
+                .map((Supplier obj) -> convertToDto(Optional.ofNullable(obj)))
                 .toList();
         return ResponseEntity.ok(supplierList);
     }
@@ -42,15 +38,8 @@ public class SupplierController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Supplier> supplierOptional = supplierService.findById(id);
         if (supplierOptional.isPresent()) {
-            Supplier supplier = supplierOptional.get();
-            SupplierDTO supplierDTO = SupplierDTO.builder()
-                    .id(supplier.getId())
-                    .ruc(supplier.getRuc())
-                    .name(supplier.getName())
-                    .email(supplier.getEmail())
-                    .status(supplier.getStatus())
-                    .build();
-            return ResponseEntity.ok(supplierDTO);
+
+            return ResponseEntity.ok(convertToDto(supplierOptional));
         }
         return ResponseEntity.notFound().build();
     }
@@ -60,13 +49,7 @@ public class SupplierController {
         if (supplierDTO.getName() == null || supplierDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del proveedor es necesario");
         }
-        Supplier obj = supplierService.save(Supplier.builder()
-                .id(supplierDTO.getId())
-                .ruc(supplierDTO.getRuc())
-                .name(supplierDTO.getName())
-                .status(supplierDTO.getStatus())
-                .email(supplierDTO.getEmail())
-                .build());
+        Supplier obj = supplierService.save(convertToEntity(supplierDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -79,16 +62,12 @@ public class SupplierController {
     public ResponseEntity<?> updateSupplier(@PathVariable Long id, @RequestBody SupplierDTO supplierDTO) {
         Optional<Supplier> supplierOptional = supplierService.findById(id);
         if (supplierOptional.isPresent()) {
-            Supplier supplier = supplierOptional.get();
-            supplier.setRuc(supplierDTO.getRuc());
-            supplier.setName(supplierDTO.getName());
-            supplier.setEmail(supplierDTO.getEmail());
-            supplier.setStatus(supplierDTO.getStatus());
+            Supplier obj = supplierService.update(id, convertToEntity(supplierDTO));
 
-            supplierService.update(id, supplier);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Proveedor actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -104,5 +83,13 @@ public class SupplierController {
             response.put("message", "Error al intentar eliminar el proveedor");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    private SupplierDTO convertToDto(Optional<Supplier> obj){
+        return modelMapper.map(obj, SupplierDTO.class);
+    }
+
+    private Supplier convertToEntity(SupplierDTO dto){
+        return modelMapper.map(dto, Supplier.class);
     }
 }

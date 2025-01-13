@@ -4,6 +4,7 @@ import com.tidsec.mail_service.entities.Role;
 import com.tidsec.mail_service.model.RoleDTO;
 import com.tidsec.mail_service.service.IRoleService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,17 +23,13 @@ import java.util.Optional;
 public class RoleController {
 
     private final IRoleService roleService;
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<RoleDTO> roleList = roleService.getAll()
                 .stream()
-                .map(role -> RoleDTO.builder()
-                        .id(role.getId())
-                        .name(role.getName())
-                        .description(role.getDescription())
-                        .status(role.getStatus())
-                        .build())
+                .map((Role obj) -> convertToDto(Optional.ofNullable(obj)))
                 .toList();
         return ResponseEntity.ok(roleList);
     }
@@ -41,14 +38,7 @@ public class RoleController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Role> roleOptional = roleService.findById(id);
         if (roleOptional.isPresent()) {
-            Role role = roleOptional.get();
-            RoleDTO roleDTO = RoleDTO.builder()
-                    .id(role.getId())
-                    .name(role.getName())
-                    .description(role.getDescription())
-                    .status(role.getStatus())
-                    .build();
-            return ResponseEntity.ok(roleDTO);
+            return ResponseEntity.ok(convertToDto(roleOptional));
         }
         return ResponseEntity.notFound().build();
     }
@@ -58,12 +48,7 @@ public class RoleController {
         if (roleDTO.getName() == null || roleDTO.getName().isBlank()) {
             return ResponseEntity.badRequest().body("El nombre del rol es obligatorio");
         }
-        Role obj = roleService.save(Role.builder()
-                .id(roleDTO.getId())
-                .name(roleDTO.getName())
-                .description(roleDTO.getDescription())
-                .status(roleDTO.getStatus())
-                .build());
+        Role obj = roleService.save(convertToEntity(roleDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -76,15 +61,11 @@ public class RoleController {
     public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody RoleDTO roleDTO) {
         Optional<Role> roleOptional = roleService.findById(id);
         if (roleOptional.isPresent()) {
-            Role role = roleOptional.get();
-            role.setName(roleDTO.getName());
-            role.setDescription(roleDTO.getDescription());
-            role.setStatus(roleDTO.getStatus());
-
-            roleService.update(id, role);
+            Role obj =  roleService.update(id, convertToEntity(roleDTO));
             Map<String, String> response = new HashMap<>();
             response.put("message", "Rol actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -100,5 +81,12 @@ public class RoleController {
             response.put("message", "Error al intentar eliminar el rol");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    private RoleDTO convertToDto(Optional<Role> obj){
+        return modelMapper.map(obj, RoleDTO.class);
+    }
+    private Role convertToEntity(RoleDTO dto){
+        return modelMapper.map(dto, Role.class);
     }
 }

@@ -4,6 +4,7 @@ import com.tidsec.mail_service.entities.Recipients;
 import com.tidsec.mail_service.model.RecipientsDTO;
 import com.tidsec.mail_service.service.IRecipientsService;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,19 +23,13 @@ import java.util.Optional;
 public class RecipientsController {
 
     private final IRecipientsService recipientsService;
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<RecipientsDTO> recipientsList = recipientsService.getAll()
                 .stream()
-                .map(recipient -> RecipientsDTO.builder()
-                        .id(recipient.getId())
-                        .name(recipient.getName())
-                        .lastName(recipient.getLastName())
-                        .email(recipient.getEmail())
-                        .phone(recipient.getPhone())
-                        .status(recipient.getStatus())
-                        .build())
+                .map((Recipients obj) -> convertToDto((Optional.ofNullable(obj))))
                 .toList();
         return ResponseEntity.ok(recipientsList);
     }
@@ -43,16 +38,7 @@ public class RecipientsController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Recipients> recipientOptional = recipientsService.findById(id);
         if (recipientOptional.isPresent()) {
-            Recipients recipient = recipientOptional.get();
-            RecipientsDTO recipientsDTO = RecipientsDTO.builder()
-                    .id(recipient.getId())
-                    .name(recipient.getName())
-                    .lastName(recipient.getLastName())
-                    .email(recipient.getEmail())
-                    .phone(recipient.getPhone())
-                    .status(recipient.getStatus())
-                    .build();
-            return ResponseEntity.ok(recipientsDTO);
+            return ResponseEntity.ok(convertToDto(recipientOptional));
         }
         return ResponseEntity.notFound().build();
     }
@@ -65,14 +51,7 @@ public class RecipientsController {
         if (recipientsDTO.getEmail() == null || recipientsDTO.getEmail().isBlank()) {
             return ResponseEntity.badRequest().body("El correo electrónico es obligatorio");
         }
-        Recipients obj = recipientsService.save(Recipients.builder()
-                .id(recipientsDTO.getId())
-                .name(recipientsDTO.getName())
-                .lastName(recipientsDTO.getLastName())
-                .email(recipientsDTO.getEmail())
-                .phone(recipientsDTO.getPhone())
-                .status(recipientsDTO.getStatus())
-                .build());
+        Recipients obj = recipientsService.save(convertToEntity(recipientsDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -85,17 +64,12 @@ public class RecipientsController {
     public ResponseEntity<?> updateRecipient(@PathVariable Long id, @RequestBody RecipientsDTO recipientsDTO) {
         Optional<Recipients> recipientOptional = recipientsService.findById(id);
         if (recipientOptional.isPresent()) {
-            Recipients recipient = recipientOptional.get();
-            recipient.setName(recipientsDTO.getName());
-            recipient.setLastName(recipientsDTO.getLastName());
-            recipient.setEmail(recipientsDTO.getEmail());
-            recipient.setPhone(recipientsDTO.getPhone());
-            recipient.setStatus(recipientsDTO.getStatus());
+            Recipients obj = recipientsService.update(id, convertToEntity(recipientsDTO));
 
-            recipientsService.update(id, recipient);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Destinatario actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -111,5 +85,13 @@ public class RecipientsController {
             response.put("message", "Error al intentar eliminar el destinatario");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    private RecipientsDTO convertToDto(Optional<Recipients> obj){
+        return modelMapper.map(obj, RecipientsDTO.class);
+    }
+
+    private Recipients convertToEntity(RecipientsDTO dto){
+        return modelMapper.map(dto, Recipients.class);
     }
 }

@@ -6,13 +6,12 @@ import com.tidsec.mail_service.model.MailingGroupDTO;
 import com.tidsec.mail_service.service.IMailingGroupService;
 import com.tidsec.mail_service.service.IRecipientsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,23 +25,15 @@ public class MailingGroupController {
 
     private final IMailingGroupService mailingGroupService;
 
-    @Autowired
-    private IRecipientsService recipientsService;
+    private final IRecipientsService recipientsService;
+
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<MailingGroupDTO> groupList = mailingGroupService.getAll()
                 .stream()
-                .map(group -> MailingGroupDTO.builder()
-                        .id(group.getId())
-                        .nameGroup(group.getNameGroup())
-                        .description(group.getDescription())
-                        .status(group.getStatus())
-                        .recipientIds(group.getRecipients()
-                                .stream()
-                                .map(Recipients::getId)
-                                .collect(Collectors.toList()))
-                        .build())
+                .map(this::convertToDto)
                 .toList();
         return ResponseEntity.ok(groupList);
     }
@@ -50,21 +41,8 @@ public class MailingGroupController {
     @GetMapping("/find/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<MailingGroup> groupOptional = mailingGroupService.findById(id);
-        if (groupOptional.isPresent()) {
-            MailingGroup group = groupOptional.get();
-            MailingGroupDTO groupDTO = MailingGroupDTO.builder()
-                    .id(group.getId())
-                    .nameGroup(group.getNameGroup())
-                    .description(group.getDescription())
-                    .status(group.getStatus())
-                    .recipientIds(group.getRecipients()
-                            .stream()
-                            .map(Recipients::getId)
-                            .collect(Collectors.toList()))
-                    .build();
-            return ResponseEntity.ok(groupDTO);
-        }
-        return ResponseEntity.notFound().build();
+        return groupOptional.map(group -> ResponseEntity.ok(convertToDto(group)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/save")
@@ -73,26 +51,13 @@ public class MailingGroupController {
             return ResponseEntity.badRequest().body("El nombre del grupo es obligatorio");
         }
 
-        List<Recipients> recipients = groupDTO.getRecipientIds()
-                .stream()
-                .map(recipientsService::findById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        MailingGroup mailingGroup = convertToEntity(groupDTO);
+        MailingGroup savedGroup = mailingGroupService.save(mailingGroup);
 
-        MailingGroup mailingGroup = MailingGroup.builder()
-                .id(groupDTO.getId())
-                .nameGroup(groupDTO.getNameGroup())
-                .description(groupDTO.getDescription())
-                .status(groupDTO.getStatus())
-                .recipients(recipients)
-                .build();
-
-        MailingGroup obj = mailingGroupService.save(mailingGroup);
-
-        URI location = ServletUriComponentsBuilder.
-                fromCurrentRequest().
-                path("{id}").buildAndExpand(obj.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(savedGroup.getId())
+                .toUri();
 
         return ResponseEntity.created(location).build();
     }
@@ -101,23 +66,11 @@ public class MailingGroupController {
     public ResponseEntity<?> updateMailingGroup(@PathVariable Long id, @RequestBody MailingGroupDTO groupDTO) {
         Optional<MailingGroup> groupOptional = mailingGroupService.findById(id);
         if (groupOptional.isPresent()) {
-            MailingGroup group = groupOptional.get();
-            group.setNameGroup(groupDTO.getNameGroup());
-            group.setDescription(groupDTO.getDescription());
-            group.setStatus(groupDTO.getStatus());
+            MailingGroup updatedGroup = convertToEntity(groupDTO);
+            updatedGroup.setId(id);
+            mailingGroupService.update(id, updatedGroup);
 
-            List<Recipients> updatedRecipients = groupDTO.getRecipientIds()
-                    .stream()
-                    .map(recipientsService::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .collect(Collectors.toList());
-
-            group.setRecipients(updatedRecipients);
-            mailingGroupService.update(id, group);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Grupo de mail actualizado exitosamente");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(convertToDto(updatedGroup));
         }
         return ResponseEntity.notFound().build();
     }
@@ -133,5 +86,37 @@ public class MailingGroupController {
             response.put("message", "Error al intentar eliminar el grupo de email");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    private MailingGroupDTO convertToDto(MailingGroup mailingGroup) {
+        MailingGroupDTO groupDTO = modelMapper.map(mailingGroup, MailingGroupDTO.class);
+
+        groupDTO.setRecipientIds(
+                mailingGroup.getRecipients()
+                        .stream()
+                        .map(Recipients::getId)
+                        .collect(Collectors.toList())
+        );
+
+        groupDTO.setRecipientNames(
+                mailingGroup.getRecipients()
+                        .stream()
+                        .map(Recipients::getName) // Asume que `Recipients` tiene un método `getName()`
+                        .collect(Collectors.toList())
+        );
+
+        return groupDTO;
+    }
+
+    private MailingGroup convertToEntity(MailingGroupDTO groupDTO) {
+        MailingGroup mailingGroup = modelMapper.map(groupDTO, MailingGroup.class);
+        List<Recipients> recipients = groupDTO.getRecipientIds()
+                .stream()
+                .map(recipientsService::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+        mailingGroup.setRecipients(recipients);
+        return mailingGroup;
     }
 }

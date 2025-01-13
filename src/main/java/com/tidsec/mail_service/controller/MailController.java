@@ -5,6 +5,7 @@ import com.tidsec.mail_service.entities.*;
 import com.tidsec.mail_service.model.MailDTO;
 import com.tidsec.mail_service.service.*;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,25 +37,15 @@ public class MailController {
 
     private final IPaymentAgreementService paymentAgreementService;
 
-    private IProjectService projectService;
+    private final IProjectService projectService;
+
+    private final ModelMapper modelMapper;
 
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<MailDTO> mailList = mailService.getAll()
                 .stream()
-                .map(mail -> MailDTO.builder()
-                        .id(mail.getId())
-                        .idRecipients(mail.getIdRecipients())
-                        .mailingGroup(mail.getMailingGroup())
-                        .bill(mail.getBill())
-                        .priority(mail.getPriority())
-                        .supplier(mail.getSupplier())
-                        .project(mail.getProject())
-                        .paymentAgreement(mail.getPaymentAgreement())
-                        .dateCreate(mail.getDateCreate())
-                        .observation(mail.getObservation())
-                        .status(mail.getStatus())
-                        .build())
+                .map((Mail obj)-> convertToDto(Optional.ofNullable(obj)))
                 .toList();
         return ResponseEntity.ok(mailList);
     }
@@ -63,40 +54,15 @@ public class MailController {
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Mail> mailOptional = mailService.findById(id);
         if (mailOptional.isPresent()) {
-            Mail mail = mailOptional.get();
-            MailDTO mailDTO = MailDTO.builder()
-                    .id(mail.getId())
-                    .idRecipients(mail.getIdRecipients())
-                    .mailingGroup(mail.getMailingGroup())
-                    .bill(mail.getBill())
-                    .priority(mail.getPriority())
-                    .supplier(mail.getSupplier())
-                    .project(mail.getProject())
-                    .paymentAgreement(mail.getPaymentAgreement())
-                    .dateCreate(mail.getDateCreate())
-                    .observation(mail.getObservation())
-                    .status(mail.getStatus())
-                    .build();
-            return ResponseEntity.ok(mailDTO);
+
+            return ResponseEntity.ok(convertToDto(mailOptional));
         }
         return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/save")
     public ResponseEntity<?> saveMail(@RequestBody MailDTO mailDTO) {
-        Mail obj =mailService.save(Mail.builder()
-                .id(mailDTO.getId())
-                .idRecipients(mailDTO.getIdRecipients())
-                .mailingGroup(mailDTO.getMailingGroup())
-                .bill(mailDTO.getBill())
-                .priority(mailDTO.getPriority())
-                .supplier(mailDTO.getSupplier())
-                .project(mailDTO.getProject())
-                .paymentAgreement(mailDTO.getPaymentAgreement())
-                .dateCreate(mailDTO.getDateCreate())
-                .observation(mailDTO.getObservation())
-                .status(mailDTO.getStatus())
-                .build());
+        Mail obj = mailService.save(convertToEntity(mailDTO));
 
         URI location = ServletUriComponentsBuilder.
                 fromCurrentRequest().
@@ -109,22 +75,13 @@ public class MailController {
     public ResponseEntity<?> updateMail(@PathVariable Long id, @RequestBody MailDTO mailDTO) {
         Optional<Mail> mailOptional = mailService.findById(id);
         if (mailOptional.isPresent()) {
-            Mail mail = mailOptional.get();
-            mail.setIdRecipients(mailDTO.getIdRecipients());
-            mail.setMailingGroup(mailDTO.getMailingGroup());
-            mail.setBill(mailDTO.getBill());
-            mail.setPriority(mailDTO.getPriority());
-            mail.setSupplier(mailDTO.getSupplier());
-            mail.setProject(mailDTO.getProject());
-            mail.setPaymentAgreement(mailDTO.getPaymentAgreement());
-            mail.setDateCreate(mailDTO.getDateCreate());
-            mail.setObservation(mailDTO.getObservation());
-            mail.setStatus(mailDTO.getStatus());
 
-            mailService.update(id, mail);
+            Mail obj = mailService.update(id, convertToEntity(mailDTO));
+
             Map<String, String> response = new HashMap<>();
             response.put("message", "Email actualizado exitosamente");
-            return ResponseEntity.ok(response);
+
+            return ResponseEntity.ok(convertToDto(Optional.ofNullable(obj)));
         }
         return ResponseEntity.notFound().build();
     }
@@ -212,5 +169,13 @@ public class MailController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error al enviar el correo: " + e.getMessage());
         }
+    }
+
+    private MailDTO convertToDto(Optional<Mail> obj){
+        return modelMapper.map(obj, MailDTO.class);
+    }
+
+    private Mail convertToEntity(MailDTO dto){
+        return modelMapper.map(dto, Mail.class);
     }
 }
