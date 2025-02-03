@@ -65,7 +65,7 @@ public class User {
     private boolean enabled;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
     @PrePersist
     protected void onCreate() {

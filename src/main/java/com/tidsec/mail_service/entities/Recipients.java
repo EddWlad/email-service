@@ -45,7 +45,7 @@ public class Recipients {
     private String phone;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
     @ManyToMany(mappedBy = "recipients", fetch = FetchType.LAZY)
     @JsonIgnore

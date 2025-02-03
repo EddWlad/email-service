@@ -1,5 +1,6 @@
 package com.tidsec.mail_service.entities;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -8,15 +9,12 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
 @Entity
-@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name= "mail")
 public class Mail {
@@ -38,7 +36,7 @@ public class Mail {
     private String bill;
 
     @Column(nullable = false)
-    private Integer priority;
+    private Integer priority = 1;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
@@ -59,13 +57,15 @@ public class Mail {
     @JsonIgnore
     private List<Attachments> attachments = new ArrayList<Attachments>();
 
+
     @Column(nullable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateCreate;
 
     @Column(nullable = true)
     private String observation;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
 }

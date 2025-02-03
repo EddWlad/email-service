@@ -2,6 +2,8 @@ package com.tidsec.mail_service.service.impl;
 
 import com.tidsec.mail_service.entities.*;
 import com.tidsec.mail_service.exception.ModelNotFoundException;
+import com.tidsec.mail_service.model.IMailProcDTO;
+import com.tidsec.mail_service.model.MailProcDTO;
 import com.tidsec.mail_service.repositories.IGenericRepository;
 import com.tidsec.mail_service.repositories.IMailRepository;
 import com.tidsec.mail_service.service.IAttachmentsService;
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -136,6 +140,35 @@ public class MailServiceImpl extends GenericServiceImpl<Mail, Long> implements I
     @Override
     public void sendMail(String toRecipients, List<String> copyRecipients, File file, String subject, String message) {
 
+    }
+
+    @Override
+    public List<Mail> search(String bill, String observation) {
+        return mailRepository.search(bill, observation);
+    }
+
+    @Override
+    public List<Mail> searchByDates(LocalDateTime date1, LocalDateTime date2) {
+        final int OFFSET_DAYS = 1;
+        return mailRepository.searchByDates(date1, date2.plusDays(OFFSET_DAYS));
+    }
+
+    @Override
+    public List<IMailProcDTO> callProcedureOrFunctionProjection() {
+        return mailRepository.callProcedureOrFunctionProjection();
+    }
+
+    @Override
+    public List<MailProcDTO> callProcedureOrFunctionNative() {
+        List<MailProcDTO> list = new ArrayList<>();
+
+        mailRepository.callProcedureOrFunctionNative().forEach(e -> {
+            MailProcDTO dto = new MailProcDTO();
+            dto.setQuantity((Integer) e[0]);
+            dto.setMaildate((String) e[1]);
+            list.add(dto);
+        });
+        return list;
     }
 
     @Override

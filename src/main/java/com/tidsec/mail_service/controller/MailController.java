@@ -2,10 +2,14 @@ package com.tidsec.mail_service.controller;
 
 import com.tidsec.mail_service.entities.*;
 
+import com.tidsec.mail_service.model.FilterMailDTO;
+import com.tidsec.mail_service.model.IMailProcDTO;
 import com.tidsec.mail_service.model.MailDTO;
+import com.tidsec.mail_service.model.MailProcDTO;
 import com.tidsec.mail_service.service.*;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,12 +68,7 @@ public class MailController {
     @PostMapping("/save")
     public ResponseEntity<?> saveMail(@RequestBody MailDTO mailDTO) {
         Mail obj = mailService.save(convertToEntity(mailDTO));
-
-        URI location = ServletUriComponentsBuilder.
-                fromCurrentRequest().
-                path("{id}").buildAndExpand(obj.getId()).toUri();
-
-        return ResponseEntity.created(location).build();
+        return ResponseEntity.ok(obj);
     }
 
     @PutMapping("/update/{id}")
@@ -170,6 +170,35 @@ public class MailController {
             return ResponseEntity.status(500).body("Error al enviar el correo: " + e.getMessage());
         }
     }
+
+    //Queries//
+    @GetMapping("/search/dates")
+    public ResponseEntity<List<MailDTO>> searchByDates(
+            @RequestParam(value = "date1", defaultValue = "2025-01-02T00:00:00") String date1,
+            @RequestParam(value = "date2", defaultValue = "2025-01-02T00:00:00") String date2
+    ){
+        List<Mail> mails = mailService.searchByDates(LocalDateTime.parse(date1), LocalDateTime.parse(date2));
+        List<MailDTO> mailsDTO = modelMapper.map(mails, new TypeToken<List<MailDTO>>(){}.getType());
+        return ResponseEntity.ok(mailsDTO);
+    }
+
+    @PostMapping("/search/others")
+    public ResponseEntity<List<MailDTO>> searchByOthers(@RequestBody FilterMailDTO filterDTO){
+        List<Mail> mails = mailService.search(filterDTO.getBill(), filterDTO.getObservation());
+        List<MailDTO> mailsDTO = modelMapper.map(mails, new TypeToken<List<MailDTO>>(){}.getType());
+        return ResponseEntity.ok(mailsDTO);
+    }
+
+    @GetMapping("/callProcedureProjection")
+    public ResponseEntity<List<IMailProcDTO>> callProcedureProjection(){
+        return ResponseEntity.ok(mailService.callProcedureOrFunctionProjection());
+    }
+
+    @GetMapping("/callProcedureNative")
+    public ResponseEntity<List<MailProcDTO>> callProcedureNative(){
+        return ResponseEntity.ok(mailService.callProcedureOrFunctionNative());
+    }
+
 
     private MailDTO convertToDto(Optional<Mail> obj){
         return modelMapper.map(obj, MailDTO.class);

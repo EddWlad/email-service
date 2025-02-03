@@ -28,7 +28,7 @@ public class MailingGroup {
     private String description;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(

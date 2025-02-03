@@ -1,16 +1,15 @@
 package com.tidsec.mail_service.model;
-import com.tidsec.mail_service.entities.MailingGroup;
-import com.tidsec.mail_service.entities.PaymentAgreement;
-import com.tidsec.mail_service.entities.Project;
-import com.tidsec.mail_service.entities.Supplier;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.tidsec.mail_service.entities.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class MailDTO {
     @EqualsAndHashCode.Include
@@ -22,7 +21,9 @@ public class MailDTO {
     private Supplier supplier;
     private Project project;
     private PaymentAgreement paymentAgreement;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateCreate;
     private String observation;
     private Integer status;
+    private List<Attachments> attachments = new ArrayList<Attachments>();
 }

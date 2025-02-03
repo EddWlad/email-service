@@ -33,5 +33,5 @@ public class Role {
 
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 }

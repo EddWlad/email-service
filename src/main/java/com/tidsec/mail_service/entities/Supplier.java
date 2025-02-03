@@ -38,7 +38,7 @@ public class Supplier {
     private String email;
 
     @Column(nullable = false)
-    private Integer status;
+    private Integer status = 1;
 
     @OneToMany (mappedBy = "supplier", cascade=CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JsonIgnore
