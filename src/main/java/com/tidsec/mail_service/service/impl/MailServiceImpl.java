@@ -1,7 +1,6 @@
 package com.tidsec.mail_service.service.impl;
 
 import com.tidsec.mail_service.entities.*;
-import com.tidsec.mail_service.exception.ModelNotFoundException;
 import com.tidsec.mail_service.model.IMailProcDTO;
 import com.tidsec.mail_service.model.MailProcDTO;
 import com.tidsec.mail_service.repositories.IGenericRepository;
@@ -11,7 +10,11 @@ import com.tidsec.mail_service.service.IMailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -19,9 +22,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -169,6 +170,21 @@ public class MailServiceImpl extends GenericServiceImpl<Mail, Long> implements I
             list.add(dto);
         });
         return list;
+    }
+
+    @Override
+    public byte[] generateReport() throws Exception {
+        byte[] data = null;
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("txt_title", "GESMAIL REPORT");
+
+        File file = new ClassPathResource("/reports/mailsReports.jasper").getFile();
+        System.out.println(callProcedureOrFunctionNative());
+        JasperPrint print = JasperFillManager.fillReport(file.getPath(), params, new JRBeanCollectionDataSource(callProcedureOrFunctionNative()));
+        data = JasperExportManager.exportReportToPdf(print);
+
+        return data;
     }
 
     @Override

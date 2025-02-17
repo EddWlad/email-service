@@ -13,10 +13,9 @@ public interface IMailService extends IGenericService<Mail, Long>{
     void sendMailWithFile(Long mailId, User user, Recipients recipients, MailingGroup copyRecipients, Supplier supplier,
                   Project project, PaymentAgreement paymentAgreement, Integer priority, String bill, String observation);
     void sendMail(String toRecipients, List<String> copyRecipients, File file, String subject, String message);
-
     List<Mail> search(String bill, String observation);
     List<Mail> searchByDates(LocalDateTime date1, LocalDateTime date2);
     List<IMailProcDTO> callProcedureOrFunctionProjection();
-
     List<MailProcDTO> callProcedureOrFunctionNative();
+    byte[] generateReport()throws Exception;
 }

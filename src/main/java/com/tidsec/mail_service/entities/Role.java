@@ -1,11 +1,9 @@
 package com.tidsec.mail_service.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -17,7 +15,6 @@ import java.util.List;
 @Table(name= "role")
 public class Role {
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
@@ -26,11 +23,6 @@ public class Role {
 
     @Column
     private String description;
-
-    /*@OneToMany(mappedBy = "role",cascade={ CascadeType.ALL }, fetch = FetchType.EAGER, orphanRemoval = true)
-    @JsonIgnore
-    private List<User> users = new ArrayList<User>();*/
-
 
     @Column(nullable = false)
     private Integer status = 1;

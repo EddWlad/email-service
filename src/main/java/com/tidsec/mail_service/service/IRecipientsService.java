@@ -1,15 +1,10 @@
 package com.tidsec.mail_service.service;
 
 import com.tidsec.mail_service.entities.Recipients;
-
-import java.util.List;
-import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface IRecipientsService extends IGenericService<Recipients, Long>{
-    /*List<Recipients> getAll();
-    Optional<Recipients> findById(Long id);
-    Recipients saveRecipients(Recipients recipients);
-    Recipients updateRecipients(Long id, Recipients recipients);
-    public boolean deleteRecipients(Long id);
-    Long countRecipients();*/
+
+    Page<Recipients> listPage(Pageable pageable);
 }

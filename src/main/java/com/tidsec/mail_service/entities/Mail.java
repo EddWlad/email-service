@@ -48,10 +48,19 @@ public class Mail {
     @JoinColumn(name = "project_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_PROJECT"))
     private Project project;
 
+    /*@ManyToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @JoinColumn(name = "signature_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_SIGNATURE"))
+    private Signature signature;*/
+
     @ManyToOne(fetch = FetchType.LAZY)
     @ToString.Exclude
     @JoinColumn(name = "paymentAgreement_id", nullable = false, foreignKey = @ForeignKey(name = "FK_MAIL_PAYMENT-AGREEMENT"))
     private PaymentAgreement paymentAgreement;
+
+    @ManyToOne
+    @JoinColumn(name = "id_user", nullable = false, foreignKey = @ForeignKey(name = "FK_CONSULT_USER"))
+    private User user;
 
     @OneToMany (mappedBy = "mail", cascade=CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JsonIgnore
@@ -67,5 +76,7 @@ public class Mail {
 
     @Column(nullable = false)
     private Integer status = 1;
+
+
 
 }

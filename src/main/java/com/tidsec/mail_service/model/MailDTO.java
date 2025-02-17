@@ -26,4 +26,5 @@ public class MailDTO {
     private String observation;
     private Integer status;
     private List<Attachments> attachments = new ArrayList<Attachments>();
+    private Signature signature;
 }

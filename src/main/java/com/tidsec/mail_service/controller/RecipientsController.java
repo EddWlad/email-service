@@ -6,6 +6,8 @@ import com.tidsec.mail_service.service.IRecipientsService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -85,6 +87,13 @@ public class RecipientsController {
             response.put("message", "Error al intentar eliminar el destinatario");
             return ResponseEntity.badRequest().body(response);
         }
+    }
+
+    @GetMapping("/pageable")
+    public ResponseEntity<Page<Recipients>> listPage(Pageable pageable) {
+        Page<Recipients> page = recipientsService.listPage(pageable);
+
+        return ResponseEntity.ok(page);
     }
 
     private RecipientsDTO convertToDto(Optional<Recipients> obj){
