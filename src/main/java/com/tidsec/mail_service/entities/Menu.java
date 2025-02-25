@@ -33,4 +33,7 @@ public class Menu {
         inverseJoinColumns = @JoinColumn(name = "id_role", referencedColumnName = "id"))
     private List<Role> roles;
 
+    @Column(nullable = false)
+    private Integer status = 1;
+
 }

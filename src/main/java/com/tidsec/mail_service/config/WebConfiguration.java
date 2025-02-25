@@ -22,6 +22,11 @@ public class WebConfiguration {
         return new HiddenHttpMethodFilter();
     }
 
+    @Bean(name = "defaultMapper")
+    public ModelMapper defaultMapper() {
+        return new ModelMapper();
+    }
+
     @Bean
     public ModelMapper modelMapper(){
         return new ModelMapper();

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -25,6 +26,8 @@ public class SupplierController {
     private final ISupplierService supplierService;
     private final ModelMapper modelMapper;
 
+    //@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PreAuthorize("@authorizeLogic.hasAccess('/api/supplier/findAll')")
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll() {
         List<SupplierDTO> supplierList = supplierService.getAll()

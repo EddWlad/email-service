@@ -22,6 +22,7 @@ import java.util.List;
 @Table(name= "user")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 

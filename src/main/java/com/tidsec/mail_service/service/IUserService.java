@@ -6,10 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface IUserService extends IGenericService<User, Long>{
-    /*List<User> getAll();
-    Optional<User> findById(Long id);
-    User saveUser(User user);
-    User updateUser(Long id, User user);
-    public boolean deleteUser(Long id);
-    Long countUser();*/
+    User findOneByUsername(String username);
+    void changePassword(String username, String newPassword);
 }
